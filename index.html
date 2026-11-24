@@ -14,10 +14,21 @@
 window.ACCENTS = { green:['#1D6A55','#5CC4A2','Зелёный'], blue:['#2557A7','#7AA7F0','Синий'], purple:['#6B3FA0','#B497F0','Фиолетовый'],
   orange:['#B4530F','#F2A25C','Оранжевый'], pink:['#B0306A','#F08AB8','Розовый'], graphite:['#3D4650','#AEB8C2','Графит'] };
 window.applyTheme = function(){
-  var r = document.documentElement, t = 'auto', a = 'green';
-  try { t = localStorage.getItem('fam_theme') || 'auto'; a = localStorage.getItem('fam_accent') || 'green'; } catch(e){}
+  // оформление (обычное / фэнтези) и режим (как в телефоне / светлый / тёмный)
+  var r = document.documentElement, st = 'plain', md = 'auto', a = 'green';
+  try {
+    st = localStorage.getItem('fam_style'); md = localStorage.getItem('fam_mode'); a = localStorage.getItem('fam_accent') || 'green';
+    var old = localStorage.getItem('fam_theme'); // прежняя общая настройка — переносим
+    if (!st && old) {
+      st = old === 'fantasy' ? 'fantasy' : 'plain'; md = old === 'fantasy' ? 'dark' : old;
+      localStorage.setItem('fam_style', st); localStorage.setItem('fam_mode', md); localStorage.removeItem('fam_theme');
+    }
+  } catch(e){}
+  if (st !== 'fantasy') st = 'plain';
+  if (md !== 'light' && md !== 'dark') md = 'auto';
   if (!ACCENTS[a]) a = 'green';
-  var dark = t === 'dark' || t === 'fantasy' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  var t = st === 'fantasy' ? 'fantasy' : md;
+  var dark = md === 'dark' || (md === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
   if (dark) r.setAttribute('data-dark', ''); else r.removeAttribute('data-dark');
   if (t === 'fantasy') r.setAttribute('data-theme', 'fantasy'); else r.removeAttribute('data-theme');
   var s = r.style;
@@ -29,7 +40,7 @@ window.applyTheme = function(){
     s.setProperty('--accent-soft', mix(c, dark ? '#18201C' : '#FFFFFF', dark ? 0.32 : 0.22));
   }
   var m = document.getElementById('themeColor');
-  if (m) m.setAttribute('content', t === 'fantasy' ? '#14100B' : dark ? '#0E1311' : '#EDF1EE');
+  if (m) m.setAttribute('content', t === 'fantasy' ? (dark ? '#14100B' : '#E9DCC0') : dark ? '#0E1311' : '#EDF1EE');
   function mix(x, y, k){
     function rgb(h){ h = h.replace('#',''); return [0,2,4].map(function(i){ return parseInt(h.substr(i,2),16); }); }
     var p = rgb(x), q = rgb(y);
@@ -166,6 +177,42 @@ if (window.matchMedia) { var mqDark = matchMedia('(prefers-color-scheme: dark)')
 /* подсказки-тултипы */
 [data-theme="fantasy"] .toast{background:linear-gradient(#1D150C,#0E0905);color:#F2E4C6;border:1px solid #B8892F;border-radius:4px;
   box-shadow:0 0 0 1px #150F09,0 0 0 2px #6B5028,0 8px 20px rgba(0,0,0,.7);font-family:var(--display);font-size:18px;font-weight:700}
+
+/* ===== Фэнтези, светлый режим: пергамент, бронза, чернила ===== */
+:root[data-theme="fantasy"]:not([data-dark]){
+  --bg:#E9DCC0; --surface:#F6EDD8; --surface-2:#EFE2C4; --ink:#2E1F0E; --muted:#6F5733; --line:#C9AE7A;
+  --accent:#8C5A10; --accent-ink:#FFF4D6; --accent-soft:#E6D2A3; --warn:#A85A10; --danger:#A3261A; --good:#3F6B1C;
+  --scrim:rgba(40,25,10,.42); --shadow:0 8px 24px rgba(70,45,15,.28);
+  --rivet:radial-gradient(circle,#D9B25A 0 1.6px,#5E4318 2.3px,rgba(0,0,0,0) 3.3px);
+  color-scheme:light;
+}
+[data-theme="fantasy"]:not([data-dark]) body{background:radial-gradient(120% 80% at 50% 0%,#F6ECD3 0%,#E6D5AF 60%,#D3BB89 100%) fixed,var(--bg)}
+[data-theme="fantasy"]:not([data-dark]) .stat,[data-theme="fantasy"]:not([data-dark]) main > .card,[data-theme="fantasy"]:not([data-dark]) .day .card,[data-theme="fantasy"]:not([data-dark]) .tile{
+  border-color:#B89452;
+  background:
+    var(--rivet) 3px 3px/10px 10px no-repeat,
+    var(--rivet) calc(100% - 3px) 3px/10px 10px no-repeat,
+    var(--rivet) 3px calc(100% - 3px)/10px 10px no-repeat,
+    var(--rivet) calc(100% - 3px) calc(100% - 3px)/10px 10px no-repeat,
+    repeating-linear-gradient(100deg,rgba(120,80,30,.025) 0 3px,rgba(255,255,255,.04) 3px 7px),
+    linear-gradient(180deg,#FAF3E2,#EEDFBE);
+  box-shadow:0 0 0 1px #9C7432,0 0 0 3px #F4E9D0,0 0 0 4px #7A5A22,0 3px 10px rgba(90,60,20,.18),inset 0 0 18px rgba(150,105,40,.16)}
+[data-theme="fantasy"]:not([data-dark]) .tile.on{box-shadow:0 0 0 1px #8C5A10,0 0 0 3px #F4E9D0,0 0 0 4px #8C5A10,0 0 14px rgba(200,140,40,.55),inset 0 0 18px rgba(150,105,40,.16)}
+[data-theme="fantasy"]:not([data-dark]) .stat .card{background:none;box-shadow:none;border-top-color:rgba(122,90,34,.35)}
+[data-theme="fantasy"]:not([data-dark]) .total{color:#7A4E0E;text-shadow:0 1px 0 rgba(255,255,255,.7),0 0 14px rgba(200,140,40,.25)}
+[data-theme="fantasy"]:not([data-dark]) .total.neg{color:var(--danger)}
+[data-theme="fantasy"]:not([data-dark]) .tile strong,[data-theme="fantasy"]:not([data-dark]) .ramt,[data-theme="fantasy"]:not([data-dark]) .cval b{color:#7A4E0E}
+[data-theme="fantasy"]:not([data-dark]) .lbl,[data-theme="fantasy"]:not([data-dark]) .dayhead span:first-child{color:#8C5A10}
+[data-theme="fantasy"]:not([data-dark]) .row+.row,[data-theme="fantasy"]:not([data-dark]) .cat+.cat{border-top-color:rgba(122,90,34,.25)}
+[data-theme="fantasy"]:not([data-dark]) .dot{box-shadow:0 0 0 1px #5E4318}
+[data-theme="fantasy"]:not([data-dark]) .seg{background:#E0CDA0;border-color:#B4945A}
+[data-theme="fantasy"]:not([data-dark]) .seg button{color:#6F5733}
+[data-theme="fantasy"]:not([data-dark]) .seg button[aria-selected="true"]{background:#FAF3E2;color:#5A3A0A;box-shadow:inset 0 0 0 1px #9C7432}
+[data-theme="fantasy"]:not([data-dark]) .bar,[data-theme="fantasy"]:not([data-dark]) .ctrack{background:linear-gradient(#3A2C1C,#4E3C27);box-shadow:0 0 0 1px #9C7432,0 0 0 2px #F4E9D0,inset 0 2px 3px rgba(0,0,0,.6)}
+[data-theme="fantasy"]:not([data-dark]) .demo{background:rgba(255,248,225,.5);border-color:#B4945A}
+/* окна-свитки в светлом режиме — тёмная «кожаная» рамка, чтобы отделялись от светлого фона */
+[data-theme="fantasy"]:not([data-dark]) .sheet{box-shadow:0 -2px 0 #8A6A2E,0 -5px 0 #4A3218,0 -7px 0 #8A6A2E,0 -12px 30px rgba(60,35,10,.45),inset 0 0 45px rgba(110,70,20,.3)}
+[data-theme="fantasy"]:not([data-dark]) .toast{box-shadow:0 0 0 1px #150F09,0 0 0 2px #B8892F,0 8px 20px rgba(60,35,10,.5)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
@@ -284,6 +331,14 @@ body.hand-left .shhead{flex-direction:row-reverse}
 .ctile .ci{font-size:22px;line-height:1}
 .ctile .cn{font-size:13px;line-height:1.2;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
 .ctile[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+/* вид сетки статей: компактно (4 в ряд) и списком */
+.cgrid.compact{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.cgrid.compact .ctile{min-height:60px;padding:8px 2px 7px;border-radius:12px;gap:3px}
+.cgrid.compact .ci{font-size:20px}
+.cgrid.compact .cn{font-size:11.5px}
+.cgrid.list{grid-template-columns:minmax(0,1fr);gap:6px}
+.cgrid.list .ctile{flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;min-height:46px;padding:9px 14px}
+.cgrid.list .cn{text-align:left;font-size:15px;-webkit-line-clamp:1}
 .csel{font-size:14px;color:var(--muted);margin-top:8px;min-height:20px}
 .csel b{color:var(--ink);font-weight:600}
 .field{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-top:14px;letter-spacing:.03em;text-transform:uppercase}
@@ -769,9 +824,9 @@ function openAdd(type, preset){
     var h = '';
     if (f.type === 'expense'){
       h += '<div class="flabel">Статья</div><input class="search" id="fSearch" type="search" placeholder="Найти статью" autocomplete="off" aria-label="Найти статью">' +
-        '<div class="cgrid" data-k="category">' + catOrder().map(function(c){
+        '<div class="cgrid ' + gridMode() + '" data-k="category">' + catOrder().map(function(c){
           return '<button type="button" class="ctile" aria-pressed="' + (c === f.category) + '" data-v="' + esc(c) + '" title="' + esc(c) + '">' +
-            '<span class="ci">' + catIcon(c) + '</span><span class="cn">' + esc(shortName(c)) + '</span></button>';
+            '<span class="ci">' + catIcon(c) + '</span><span class="cn">' + esc(gridMode() === 'list' ? c : shortName(c)) + '</span></button>';
         }).join('') + '</div>' +
         '<div class="csel" id="fCatName">' + (f.category ? 'Статья: <b>' + esc(f.category) + '</b>' : '') + '</div>';
       h += '<div class="flabel">Кто</div><div class="chips" data-k="who">' + chipsHtml(cfgD.people, f.who) + '</div>';
@@ -952,8 +1007,17 @@ $('#gateBtn').addEventListener('click', function(){ cfg.code = $('#gateCode').va
 $('#gateCode').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') $('#gateBtn').click(); });
 
 var HANDS = [['left','Слева (левша)'],['center','По центру'],['right','Справа']];
-var THEMES = [['auto','Как в телефоне'],['light','Светлая'],['dark','Тёмная'],['fantasy','Фэнтези']];
-function theme(){ var t = store.get('fam_theme'); return THEMES.some(function(x){ return x[0] === t; }) ? t : 'auto'; }
+var STYLES = [['plain','Обычное'],['fantasy','Фэнтези']];
+var MODES = [['auto','Как в телефоне'],['light','Светлый'],['dark','Тёмный']];
+function styleSet(){ return store.get('fam_style') === 'fantasy' ? 'fantasy' : 'plain'; }
+function modeSet(){ var m = store.get('fam_mode'); return m === 'light' || m === 'dark' ? m : 'auto'; }
+function chipRow(id, list, cur){
+  return '<div class="chips" id="' + id + '">' + list.map(function(x){
+    return '<button type="button" class="chip" data-v="' + x[0] + '" aria-pressed="' + (cur === x[0]) + '"><span>' + x[1] + '</span></button>';
+  }).join('') + '</div>';
+}
+var GRIDS = [['big','Крупные'],['compact','Компактные'],['list','Списком']];
+function gridMode(){ var g = store.get('fam_grid'); return g === 'compact' || g === 'list' ? g : 'big'; }
 function accent(){ var a = store.get('fam_accent'); return ACCENTS[a] ? a : 'green'; }
 function hand(){ var h = store.get('fam_hand'); return h === 'left' || h === 'right' ? h : 'center'; }
 function applyHand(){
@@ -970,13 +1034,16 @@ function openSettings(){
       return '<button type="button" class="chip" data-v="' + h[0] + '" aria-pressed="' + (hand() === h[0]) + '"><span>' + h[1] + '</span></button>';
     }).join('') + '</div>' +
     '<p class="note" style="margin-top:8px">«Слева» — ещё и кнопки ↻ ⚙ и крестик в окнах переедут на левую сторону.</p>' +
-    '<div class="flabel">Оформление</div><div class="chips" id="sTheme">' + THEMES.map(function(t){
-      return '<button type="button" class="chip" data-v="' + t[0] + '" aria-pressed="' + (theme() === t[0]) + '"><span>' + t[1] + '</span></button>';
+    '<div class="flabel">Статьи при добавлении</div><div class="chips" id="sGrid">' + GRIDS.map(function(g){
+      return '<button type="button" class="chip" data-v="' + g[0] + '" aria-pressed="' + (gridMode() === g[0]) + '"><span>' + g[1] + '</span></button>';
     }).join('') + '</div>' +
-    '<div class="flabel">Цвет</div><div class="swatches' + (theme() === 'fantasy' ? ' off' : '') + '" id="sAccent">' + Object.keys(ACCENTS).map(function(k){
+    '<p class="note" style="margin-top:8px">Крупные — 3 в ряд, компактные — 4 в ряд, списком — полные названия строками.</p>' +
+    '<div class="flabel">Оформление</div>' + chipRow('sStyle', STYLES, styleSet()) +
+    '<div class="flabel">Режим</div>' + chipRow('sMode', MODES, modeSet()) +
+    '<div class="flabel">Цвет</div><div class="swatches' + (styleSet() === 'fantasy' ? ' off' : '') + '" id="sAccent">' + Object.keys(ACCENTS).map(function(k){
       return '<button type="button" class="sw" data-v="' + k + '" aria-pressed="' + (accent() === k) + '" aria-label="' + ACCENTS[k][2] + '" title="' + ACCENTS[k][2] + '" style="background:' + ACCENTS[k][0] + '"></button>';
     }).join('') + '</div>' +
-    '<p class="note" id="sAccentNote" style="margin-top:6px"' + (theme() === 'fantasy' ? '' : ' hidden') + '>В теме «Фэнтези» свои цвета — золото и камень.</p>' +
+    '<p class="note" id="sAccentNote" style="margin-top:6px"' + (styleSet() === 'fantasy' ? '' : ' hidden') + '>В «Фэнтези» свои цвета — золото, бронза и камень.</p>' +
     (state.demo ? '<p class="note">Сейчас открыто демо.</p><button type="button" class="primary" id="sConnect">Подключить свою таблицу</button>' :
       '<div class="flabel">Ссылка для семьи</div>' +
       '<p class="note" style="margin-top:0">Отправьте её родным: по ней приложение само подключится к вашей таблице, останется ввести код.</p>' +
@@ -985,12 +1052,22 @@ function openSettings(){
       '<button type="button" class="danger" id="sOut">Отключить таблицу на этом телефоне</button>' +
       (queue.length ? '<p class="note">Ждут отправки: ' + queue.length + '. При отключении они пропадут.</p>' : ''))
   );
-  $('#sTheme').addEventListener('click', function(ev){
+  $('#sGrid').addEventListener('click', function(ev){
     var b = ev.target.closest('.chip'); if (!b) return;
-    store.set('fam_theme', b.dataset.v); applyTheme(); render();
+    store.set('fam_grid', b.dataset.v);
+    Array.prototype.forEach.call(this.children, function(x){ x.setAttribute('aria-pressed', x === b); });
+  });
+  $('#sStyle').addEventListener('click', function(ev){
+    var b = ev.target.closest('.chip'); if (!b) return;
+    store.set('fam_style', b.dataset.v); applyTheme(); render();
     Array.prototype.forEach.call(this.children, function(x){ x.setAttribute('aria-pressed', x === b); });
     $('#sAccent').classList.toggle('off', b.dataset.v === 'fantasy');
     $('#sAccentNote').hidden = b.dataset.v !== 'fantasy';
+  });
+  $('#sMode').addEventListener('click', function(ev){
+    var b = ev.target.closest('.chip'); if (!b) return;
+    store.set('fam_mode', b.dataset.v); applyTheme(); render();
+    Array.prototype.forEach.call(this.children, function(x){ x.setAttribute('aria-pressed', x === b); });
   });
   $('#sAccent').addEventListener('click', function(ev){
     var b = ev.target.closest('.sw'); if (!b) return;
