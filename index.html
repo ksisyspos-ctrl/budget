@@ -8,12 +8,41 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Бюджет">
-<meta name="theme-color" content="#EDF1EE" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0E1311" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#EDF1EE" id="themeColor">
+<script>
+/* Оформление: применяем до отрисовки, чтобы не мигало */
+window.ACCENTS = { green:['#1D6A55','#5CC4A2','Зелёный'], blue:['#2557A7','#7AA7F0','Синий'], purple:['#6B3FA0','#B497F0','Фиолетовый'],
+  orange:['#B4530F','#F2A25C','Оранжевый'], pink:['#B0306A','#F08AB8','Розовый'], graphite:['#3D4650','#AEB8C2','Графит'] };
+window.applyTheme = function(){
+  var r = document.documentElement, t = 'auto', a = 'green';
+  try { t = localStorage.getItem('fam_theme') || 'auto'; a = localStorage.getItem('fam_accent') || 'green'; } catch(e){}
+  if (!ACCENTS[a]) a = 'green';
+  var dark = t === 'dark' || t === 'fantasy' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  if (dark) r.setAttribute('data-dark', ''); else r.removeAttribute('data-dark');
+  if (t === 'fantasy') r.setAttribute('data-theme', 'fantasy'); else r.removeAttribute('data-theme');
+  var s = r.style;
+  if (t === 'fantasy') { ['--accent','--accent-ink','--accent-soft'].forEach(function(p){ s.removeProperty(p); }); }
+  else {
+    var c = ACCENTS[a][dark ? 1 : 0];
+    s.setProperty('--accent', c);
+    s.setProperty('--accent-ink', dark ? '#0B1410' : '#FFFFFF');
+    s.setProperty('--accent-soft', mix(c, dark ? '#18201C' : '#FFFFFF', dark ? 0.32 : 0.22));
+  }
+  var m = document.getElementById('themeColor');
+  if (m) m.setAttribute('content', t === 'fantasy' ? '#14100B' : dark ? '#0E1311' : '#EDF1EE');
+  function mix(x, y, k){
+    function rgb(h){ h = h.replace('#',''); return [0,2,4].map(function(i){ return parseInt(h.substr(i,2),16); }); }
+    var p = rgb(x), q = rgb(y);
+    return '#' + p.map(function(v,i){ var n = Math.round(v*k + q[i]*(1-k)); return (n<16?'0':'') + n.toString(16); }).join('');
+  }
+};
+applyTheme();
+if (window.matchMedia) { var mqDark = matchMedia('(prefers-color-scheme: dark)'); if (mqDark.addEventListener) mqDark.addEventListener('change', applyTheme); else if (mqDark.addListener) mqDark.addListener(applyTheme); }
+</script>
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;600&display=swap">
 <style>
 /* Layout: one narrow phone column — month sheet + spent up top, three tabs, floating add button, bottom sheet for input */
 :root{
@@ -25,11 +54,38 @@
   --body:"Onest",-apple-system,"Segoe UI",system-ui,sans-serif;
   color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root{
+:root[data-dark]{
   --bg:#0E1311; --surface:#18201C; --surface-2:#1F2924; --ink:#E7EEEA; --muted:#93A199; --line:#2A3530;
   --accent:#5CC4A2; --accent-ink:#06231A; --accent-soft:#24453A; --warn:#F2A25C; --danger:#F07A6E; --good:#6FD39A;
   --scrim:rgba(0,0,0,.55); --shadow:0 8px 24px rgba(0,0,0,.5); color-scheme:dark;
-}}
+}
+/* ===== Тема «Фэнтези»: тёмный камень, пергамент, золото ===== */
+:root[data-theme="fantasy"]{
+  --bg:#14100B; --surface:#271E15; --surface-2:#30251A; --ink:#F2E4C6; --muted:#B49C74; --line:#4B3A26;
+  --accent:#D9A93F; --accent-ink:#1C1307; --accent-soft:#4A3818; --warn:#E9A23B; --danger:#E5583F; --good:#9CCB5A;
+  --scrim:rgba(0,0,0,.62); --shadow:0 8px 24px rgba(0,0,0,.6);
+  --display:"Cinzel",Georgia,"Times New Roman",serif; color-scheme:dark;
+}
+[data-theme="fantasy"] body{background:radial-gradient(120% 60% at 50% 0%,#2C2015 0%,var(--bg) 65%) fixed,var(--bg)}
+[data-theme="fantasy"] .card,[data-theme="fantasy"] .stat,[data-theme="fantasy"] .tile{border:1px solid #5C4730;box-shadow:inset 0 1px 0 rgba(255,220,150,.07)}
+[data-theme="fantasy"] .stat .card{border-width:1px 0 0}
+[data-theme="fantasy"] .tile.on{box-shadow:inset 0 0 0 2px var(--accent)}
+[data-theme="fantasy"] .total{color:#F0C76A;text-shadow:0 0 18px rgba(217,169,63,.35);letter-spacing:0}
+[data-theme="fantasy"] .total.neg{color:var(--danger);text-shadow:none}
+[data-theme="fantasy"] .mname,[data-theme="fantasy"] .stat h3,[data-theme="fantasy"] .flabel,[data-theme="fantasy"] .shhead h2{font-family:var(--display);letter-spacing:.06em}
+[data-theme="fantasy"] .fab,[data-theme="fantasy"] .primary{background:linear-gradient(#E9C062,#B8872A);color:#1C1307;border:1px solid #F5D98C;box-shadow:0 0 0 2px #3A2A12,var(--shadow)}
+[data-theme="fantasy"] .bar,[data-theme="fantasy"] .ctrack{background:#1B140D;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+[data-theme="fantasy"] .bar i,[data-theme="fantasy"] .ctrack i{background:linear-gradient(90deg,#B8872A,#F0C76A)}
+[data-theme="fantasy"] .bar i.warn,[data-theme="fantasy"] .ctrack i.warn{background:linear-gradient(90deg,#A8601A,#E9A23B)}
+[data-theme="fantasy"] .bar i.over,[data-theme="fantasy"] .ctrack i.over{background:linear-gradient(90deg,#8E2A1A,#E5583F)}
+[data-theme="fantasy"] .seg{background:#1B140D;border:1px solid #4B3A26}
+[data-theme="fantasy"] .seg button[aria-selected="true"]{background:var(--surface-2);color:#F0C76A;box-shadow:inset 0 0 0 1px #6B5335}
+[data-theme="fantasy"] .sheet{border-top:2px solid #6B5335}
+[data-theme="fantasy"] .ctile[aria-pressed="true"],[data-theme="fantasy"] .chip[aria-pressed="true"]{background:linear-gradient(#E9C062,#B8872A);border-color:#F5D98C}
+.swatches{display:flex;flex-wrap:wrap;gap:12px;padding:4px 2px}
+.sw{width:36px;height:36px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(0,0,0,.1)}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--ink)}
+.swatches.off{opacity:.35;pointer-events:none}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
@@ -798,6 +854,9 @@ $('#gateBtn').addEventListener('click', function(){ cfg.code = $('#gateCode').va
 $('#gateCode').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') $('#gateBtn').click(); });
 
 var HANDS = [['left','Слева (левша)'],['center','По центру'],['right','Справа']];
+var THEMES = [['auto','Как в телефоне'],['light','Светлая'],['dark','Тёмная'],['fantasy','Фэнтези']];
+function theme(){ var t = store.get('fam_theme'); return THEMES.some(function(x){ return x[0] === t; }) ? t : 'auto'; }
+function accent(){ var a = store.get('fam_accent'); return ACCENTS[a] ? a : 'green'; }
 function hand(){ var h = store.get('fam_hand'); return h === 'left' || h === 'right' ? h : 'center'; }
 function applyHand(){
   document.body.classList.remove('hand-left','hand-right');
@@ -813,6 +872,13 @@ function openSettings(){
       return '<button type="button" class="chip" data-v="' + h[0] + '" aria-pressed="' + (hand() === h[0]) + '"><span>' + h[1] + '</span></button>';
     }).join('') + '</div>' +
     '<p class="note" style="margin-top:8px">«Слева» — ещё и кнопки ↻ ⚙ и крестик в окнах переедут на левую сторону.</p>' +
+    '<div class="flabel">Оформление</div><div class="chips" id="sTheme">' + THEMES.map(function(t){
+      return '<button type="button" class="chip" data-v="' + t[0] + '" aria-pressed="' + (theme() === t[0]) + '"><span>' + t[1] + '</span></button>';
+    }).join('') + '</div>' +
+    '<div class="flabel">Цвет</div><div class="swatches' + (theme() === 'fantasy' ? ' off' : '') + '" id="sAccent">' + Object.keys(ACCENTS).map(function(k){
+      return '<button type="button" class="sw" data-v="' + k + '" aria-pressed="' + (accent() === k) + '" aria-label="' + ACCENTS[k][2] + '" title="' + ACCENTS[k][2] + '" style="background:' + ACCENTS[k][0] + '"></button>';
+    }).join('') + '</div>' +
+    '<p class="note" id="sAccentNote" style="margin-top:6px"' + (theme() === 'fantasy' ? '' : ' hidden') + '>В теме «Фэнтези» свои цвета — золото и камень.</p>' +
     (state.demo ? '<p class="note">Сейчас открыто демо.</p><button type="button" class="primary" id="sConnect">Подключить свою таблицу</button>' :
       '<div class="flabel">Ссылка для семьи</div>' +
       '<p class="note" style="margin-top:0">Отправьте её родным: по ней приложение само подключится к вашей таблице, останется ввести код.</p>' +
@@ -821,6 +887,18 @@ function openSettings(){
       '<button type="button" class="danger" id="sOut">Отключить таблицу на этом телефоне</button>' +
       (queue.length ? '<p class="note">Ждут отправки: ' + queue.length + '. При отключении они пропадут.</p>' : ''))
   );
+  $('#sTheme').addEventListener('click', function(ev){
+    var b = ev.target.closest('.chip'); if (!b) return;
+    store.set('fam_theme', b.dataset.v); applyTheme();
+    Array.prototype.forEach.call(this.children, function(x){ x.setAttribute('aria-pressed', x === b); });
+    $('#sAccent').classList.toggle('off', b.dataset.v === 'fantasy');
+    $('#sAccentNote').hidden = b.dataset.v !== 'fantasy';
+  });
+  $('#sAccent').addEventListener('click', function(ev){
+    var b = ev.target.closest('.sw'); if (!b) return;
+    store.set('fam_accent', b.dataset.v); applyTheme();
+    Array.prototype.forEach.call(this.children, function(x){ x.setAttribute('aria-pressed', x === b); });
+  });
   $('#sHand').addEventListener('click', function(ev){
     var b = ev.target.closest('.chip'); if (!b) return;
     store.set('fam_hand', b.dataset.v); applyHand();
