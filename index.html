@@ -62,7 +62,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .bmeta{font-size:14px;color:var(--muted);margin-top:8px;font-variant-numeric:tabular-nums}
 .bmeta strong{color:var(--ink);font-weight:600}
 .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
-.tile{background:var(--surface);border-radius:12px;padding:10px 12px;text-align:left;min-width:0}
+.tile{background:var(--surface);border-radius:12px;padding:10px 12px;text-align:left;min-width:0;box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .15s,transform .1s}
+.tile:active{transform:scale(.96)}
+.tile.on{box-shadow:inset 0 0 0 2px var(--accent)}
+.tile.on span{color:var(--accent);font-weight:600}
+.flash{animation:flash 1.4s ease-out}
+@keyframes flash{0%,30%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 3px transparent}}
 .tile span{display:block;font-size:12px;color:var(--muted)}
 .tile strong{display:block;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
@@ -187,9 +192,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
     <div class="bar"><i id="bFill"></i></div>
     <div class="bmeta" id="bMeta"></div>
     <div class="tiles">
-      <button class="tile" type="button" data-go="income"><span>Доход</span><strong id="tIncome">—</strong></button>
-      <button class="tile" type="button" data-go="cats"><span>До плана</span><strong id="tBalance">—</strong></button>
-      <button class="tile" type="button" data-go="income"><span>Копилка</span><strong id="tKop">—</strong></button>
+      <button class="tile" type="button" data-tile="income"><span>Доход</span><strong id="tIncome">—</strong></button>
+      <button class="tile" type="button" data-tile="plan"><span>До плана</span><strong id="tBalance">—</strong></button>
+      <button class="tile" type="button" data-tile="kop"><span>Копилка</span><strong id="tKop">—</strong></button>
     </div>
   </header>
   <div class="seg" role="tablist">
@@ -475,6 +480,7 @@ function render(){
   renderHeader();
   updateNote();
   Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function(b){ b.setAttribute('aria-selected', b.dataset.view === state.view); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-tile]'), function(b){ b.classList.toggle('on', b.dataset.tile === state.tile); });
   $('#view').innerHTML = state.view === 'cats' ? catsHtml() : state.view === 'list' ? listHtml() : incomeHtml();
 }
 function renderHeader(){
@@ -540,7 +546,7 @@ function listHtml(){
 function incomeHtml(){
   var d = D(), t = totals(), kc = d.config.kopilkaCurrency, html = '';
   var pct = t.incomePlan ? Math.min(100, t.income / t.incomePlan * 100) : 0;
-  html += '<div class="stat"><h3>Доходы</h3><div class="big">' + money(t.income) + (t.incomePlan ? ' <small>из ожидаемых ' + money(t.incomePlan) + '</small>' : '') + '</div>' +
+  html += '<div class="stat" id="incCard"><h3>Доходы</h3><div class="big">' + money(t.income) + (t.incomePlan ? ' <small>из ожидаемых ' + money(t.incomePlan) + '</small>' : '') + '</div>' +
     (t.incomePlan ? '<div class="bar"><i style="width:' + pct + '%"></i></div>' : '') + '</div>';
   function dr(label, v){ return '<span>' + label + '</span><b class="' + (v < 0 ? 'neg' : 'pos') + '">' + signed(v) + '</b>'; }
   html += '<div class="stat"><h3>Разница</h3><div class="diff">' +
@@ -554,7 +560,7 @@ function incomeHtml(){
       '<span class="rmain"><span class="rcat">' + (esc(i.source) || 'Без источника') + '</span><span class="rsub">' + sub + '</span></span>' +
       '<span class="ramt ' + (i.amount < 0 ? 'neg' : '') + '">' + money(i.amount) + '</span></button>';
   }).join('') : '<div class="empty">Доходов на этом листе пока нет</div>') + '</div></div>';
-  html += '<div class="stat"><h3>Копилка</h3><div class="big">' + money(d.kopilka.total, kc) + '</div>' +
+  html += '<div class="stat" id="kopCard"><h3>Копилка</h3><div class="big">' + money(d.kopilka.total, kc) + '</div>' +
     '<div class="btns"><button type="button" class="soft" data-kop="1">+ Пополнить</button><button type="button" class="soft" data-kop="-1">− Взять</button></div>' +
     '<div class="card">' + (d.kopilka.items.length ? d.kopilka.items.map(function(k){
       var sub = [k.pending ? 'ждёт отправки' : k.date ? dayLabel(k.date) : '', k.who].filter(Boolean).map(esc).join(' · ');
@@ -814,8 +820,21 @@ function openSettings(){
 }
 
 /* ======================= events ======================= */
+// плитки наверху: подсвечиваем нажатую, переходим к нужному блоку и коротко подсвечиваем его
+function reveal(k){
+  var el = k === 'kop' ? $('#kopCard') : k === 'income' ? $('#incCard') : $('#view .card');
+  if (!el) return;
+  var smooth = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  // «Доход» и «До плана» — блок и так сразу под плитками; к копилке (она внизу) прокручиваем
+  var top = el.getBoundingClientRect().top + window.pageYOffset;
+  var target = k === 'kop' ? top - 90 : Math.min(window.pageYOffset, top - 90);
+  if (Math.abs(target - window.pageYOffset) > 4) window.scrollTo({ top: Math.max(0, target), behavior: smooth ? 'smooth' : 'auto' });
+  el.classList.remove('flash'); el.offsetWidth; el.classList.add('flash');
+  setTimeout(function(){ el.classList.remove('flash'); }, 1500);
+}
 function step(dir){
   var d = D(); if (!d) return;
+  state.tile = null;
   var i = d.sheets.indexOf(d.sheet) + dir;
   if (i >= 0 && i < d.sheets.length) { $('#mName').textContent = d.sheets[i]; load(d.sheets[i]); }
 }
@@ -824,8 +843,9 @@ $('#nextM').addEventListener('click', function(){ step(1); });
 $('#sync').addEventListener('click', function(){ load(state.sheet, { fresh: true, toast: true }); flush(); });
 $('#gear').addEventListener('click', openSettings);
 document.addEventListener('click', function(ev){
-  var v = ev.target.closest('[data-view]'); if (v) { state.view = v.dataset.view; render(); return; }
-  var g = ev.target.closest('[data-go]'); if (g && D()) { state.view = g.dataset.go; render(); }
+  var v = ev.target.closest('[data-view]'); if (v) { state.view = v.dataset.view; state.tile = null; render(); return; }
+  var g = ev.target.closest('[data-tile]');
+  if (g && D()) { state.tile = g.dataset.tile; state.view = state.tile === 'plan' ? 'cats' : 'income'; render(); reveal(state.tile); }
 });
 $('#addBtn').addEventListener('click', function(){ if (D()) openAdd(state.view === 'income' ? 'income' : 'expense'); });
 $('#scrim').addEventListener('click', closeSheet);
