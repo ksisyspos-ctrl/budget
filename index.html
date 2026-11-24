@@ -42,7 +42,7 @@ if (window.matchMedia) { var mqDark = matchMedia('(prefers-color-scheme: dark)')
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;600&display=swap">
 <style>
 /* Layout: one narrow phone column — month sheet + spent up top, three tabs, floating add button, bottom sheet for input */
 :root{
@@ -64,7 +64,8 @@ if (window.matchMedia) { var mqDark = matchMedia('(prefers-color-scheme: dark)')
   --bg:#14100B; --surface:#271E15; --surface-2:#30251A; --ink:#F2E4C6; --muted:#B49C74; --line:#4B3A26;
   --accent:#D9A93F; --accent-ink:#1C1307; --accent-soft:#4A3818; --warn:#E9A23B; --danger:#E5583F; --good:#9CCB5A;
   --scrim:rgba(0,0,0,.62); --shadow:0 8px 24px rgba(0,0,0,.6);
-  --display:"Cinzel",Georgia,"Times New Roman",serif; color-scheme:dark;
+  --display:"Cormorant SC",Georgia,"Times New Roman",serif; color-scheme:dark;
+  --rivet:radial-gradient(circle,#F6DC8A 0 1.6px,#7A5A22 2.3px,rgba(0,0,0,0) 3.3px);
 }
 [data-theme="fantasy"] body{background:radial-gradient(120% 60% at 50% 0%,#2C2015 0%,var(--bg) 65%) fixed,var(--bg)}
 [data-theme="fantasy"] .card,[data-theme="fantasy"] .stat,[data-theme="fantasy"] .tile{border:1px solid #5C4730;box-shadow:inset 0 1px 0 rgba(255,220,150,.07)}
@@ -86,6 +87,85 @@ if (window.matchMedia) { var mqDark = matchMedia('(prefers-color-scheme: dark)')
 .sw{width:36px;height:36px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(0,0,0,.1)}
 .sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--ink)}
 .swatches.off{opacity:.35;pointer-events:none}
+
+/* ===== Фэнтези, часть 2: металлические рамки с заклёпками ===== */
+[data-theme="fantasy"] .stat,[data-theme="fantasy"] main > .card,[data-theme="fantasy"] .day .card,[data-theme="fantasy"] .tile{
+  border:1px solid #2A1D10;border-radius:6px;
+  background:
+    var(--rivet) 3px 3px/10px 10px no-repeat,
+    var(--rivet) calc(100% - 3px) 3px/10px 10px no-repeat,
+    var(--rivet) 3px calc(100% - 3px)/10px 10px no-repeat,
+    var(--rivet) calc(100% - 3px) calc(100% - 3px)/10px 10px no-repeat,
+    repeating-linear-gradient(135deg,rgba(255,255,255,.015) 0 2px,rgba(0,0,0,.035) 2px 5px),
+    linear-gradient(180deg,#31261B,#1F1710);
+  box-shadow:0 0 0 1px #9C7432,0 0 0 3px #150F09,0 0 0 4px #6B5028,inset 0 1px 0 rgba(255,225,160,.08),inset 0 0 18px rgba(0,0,0,.5);
+}
+[data-theme="fantasy"] .tiles{gap:12px;margin-top:18px}
+[data-theme="fantasy"] .stat{margin-bottom:16px}
+[data-theme="fantasy"] .day{margin-bottom:18px}
+[data-theme="fantasy"] .tile strong{color:#F0C76A}
+[data-theme="fantasy"] .tile.on{box-shadow:0 0 0 1px #F0C76A,0 0 0 3px #150F09,0 0 0 4px #F0C76A,0 0 16px rgba(240,199,106,.5),inset 0 0 18px rgba(0,0,0,.5)}
+[data-theme="fantasy"] .stat .card{background:none;box-shadow:none;border:0;border-top:1px solid rgba(156,116,50,.35);border-radius:0}
+[data-theme="fantasy"] .flash{animation:flashGold 1.4s ease-out}
+@keyframes flashGold{0%,30%{filter:brightness(1.35) drop-shadow(0 0 10px rgba(240,199,106,.7))}100%{filter:none}}
+
+/* журнал заданий */
+[data-theme="fantasy"] .row+.row,[data-theme="fantasy"] .cat+.cat{border-top:1px solid rgba(156,116,50,.22)}
+[data-theme="fantasy"] .dot{border-radius:2px;transform:rotate(45deg);width:9px;height:9px;box-shadow:0 0 0 1px #150F09,0 0 6px rgba(240,199,106,.35)}
+[data-theme="fantasy"] .rcat,[data-theme="fantasy"] .cname{font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.02em}
+[data-theme="fantasy"] .ramt,[data-theme="fantasy"] .cval b{color:#F0C76A}
+[data-theme="fantasy"] .dayhead span:first-child{font-family:var(--display);font-size:16px;color:#D9A93F;letter-spacing:.06em}
+[data-theme="fantasy"] .dayhead span:first-child::before{content:"❖ "}
+[data-theme="fantasy"] .total{font-weight:700}
+[data-theme="fantasy"] .lbl{font-family:var(--display);font-size:17px;color:#D9A93F;letter-spacing:.06em}
+
+/* шкалы: расходы — здоровье, доход — мана, статьи — опыт */
+[data-theme="fantasy"] .bar,[data-theme="fantasy"] .ctrack{position:relative;height:12px;border-radius:3px;overflow:hidden;
+  background:linear-gradient(#0B0805,#1F160E);box-shadow:0 0 0 1px #6B5028,0 0 0 2px #120C07,inset 0 2px 3px rgba(0,0,0,.8)}
+[data-theme="fantasy"] .ctrack{height:10px;margin:2px 2px 0}
+[data-theme="fantasy"] .bar::after,[data-theme="fantasy"] .ctrack::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 45%),repeating-linear-gradient(90deg,rgba(0,0,0,0) 0 calc(10% - 1px),rgba(0,0,0,.55) calc(10% - 1px) 10%)}
+[data-theme="fantasy"] .bar i,[data-theme="fantasy"] .ctrack i{border-radius:2px}
+[data-theme="fantasy"] header .bar i{background:linear-gradient(180deg,#FF8A7A 0%,#D3321F 38%,#8E160B 100%);box-shadow:0 0 8px rgba(230,60,40,.55)}
+[data-theme="fantasy"] #incCard .bar i{background:linear-gradient(180deg,#9CC8FF 0%,#2F6FE0 38%,#173A8C 100%);box-shadow:0 0 8px rgba(70,130,255,.55)}
+[data-theme="fantasy"] .ctrack i{background:linear-gradient(180deg,#FFE39A 0%,#D9A93F 40%,#8A5E14 100%)}
+[data-theme="fantasy"] .ctrack i.warn{background:linear-gradient(180deg,#FFC48A 0%,#E07B22 40%,#8A4210 100%)}
+[data-theme="fantasy"] .ctrack i.over{background:linear-gradient(180deg,#FF8A7A 0%,#D3321F 40%,#8E160B 100%)}
+
+/* кнопки-самоцветы */
+[data-theme="fantasy"] .fab,[data-theme="fantasy"] .primary,[data-theme="fantasy"] .soft{
+  background:radial-gradient(ellipse 85% 65% at 50% 12%,#FFF1C2 0%,#F0C76A 30%,#B8872A 66%,#6E4A12 100%);
+  color:#1C1307;border:1px solid #2A1C0A;text-shadow:0 1px 0 rgba(255,240,200,.6);font-family:var(--display);font-weight:700;letter-spacing:.04em;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.55),inset 0 -3px 0 rgba(0,0,0,.35),0 0 0 2px #B8892F,0 0 0 4px #150F09,0 6px 18px rgba(0,0,0,.6)}
+[data-theme="fantasy"] .fab{font-size:19px;border-radius:10px;padding:13px 28px}
+[data-theme="fantasy"] .primary{font-size:19px;border-radius:8px}
+[data-theme="fantasy"] .soft{border-radius:8px;font-size:17px}
+[data-theme="fantasy"] .fab:active,[data-theme="fantasy"] .primary:active,[data-theme="fantasy"] .soft:active{
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(0,0,0,.35),0 0 0 2px #F0C76A,0 0 0 4px #150F09,0 0 22px rgba(255,205,100,.85)}
+
+/* окна-свитки (пергамент) */
+[data-theme="fantasy"] .sheet{
+  --surface:#E8D6AA; --surface-2:#F3E6C4; --ink:#2B1B0B; --muted:#6E5530; --line:#B4945A; --accent:#8C5A10; --accent-ink:#FFF4D6; --danger:#9E2A16; --good:#3F6B1C;
+  color:var(--ink);
+  background:radial-gradient(130% 90% at 50% 0%,#F4E7C3 0%,#E4CF9C 58%,#C7A766 100%);
+  border-top:0;border-radius:14px 14px 0 0;
+  box-shadow:0 -2px 0 #8A6A2E,0 -5px 0 #2A1C0E,0 -7px 0 #6B4E22,0 -12px 30px rgba(0,0,0,.65),inset 0 0 45px rgba(110,70,20,.35)}
+[data-theme="fantasy"] .sheet .grab{background:#A88A52}
+[data-theme="fantasy"] .sheet .seg{background:#D2B97F;border:1px solid #A88A52}
+[data-theme="fantasy"] .sheet .seg button{color:#6E5530}
+[data-theme="fantasy"] .sheet .seg button[aria-selected="true"]{background:#F6EACB;color:#2B1B0B;box-shadow:inset 0 0 0 1px #A88A52}
+[data-theme="fantasy"] .sheet .amt{border-bottom-color:#8C5A10}
+[data-theme="fantasy"] .sheet .ctile,[data-theme="fantasy"] .sheet .chip{background:rgba(255,248,225,.55);border-color:#B4945A}
+[data-theme="fantasy"] .ctile[aria-pressed="true"],[data-theme="fantasy"] .chip[aria-pressed="true"],
+[data-theme="fantasy"] .sheet .ctile[aria-pressed="true"],[data-theme="fantasy"] .sheet .chip[aria-pressed="true"]{
+  background:radial-gradient(ellipse 85% 70% at 50% 15%,#FFF1C2 0%,#F0C76A 35%,#B8872A 100%);border-color:#7A5A22;color:#1C1307;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 0 0 1px #7A5A22,0 0 12px rgba(240,180,60,.6)}
+[data-theme="fantasy"] .sheet .detail{color:#6E4A12}
+[data-theme="fantasy"] .sheet .shhead h2{font-size:22px}
+
+/* подсказки-тултипы */
+[data-theme="fantasy"] .toast{background:linear-gradient(#1D150C,#0E0905);color:#F2E4C6;border:1px solid #B8892F;border-radius:4px;
+  box-shadow:0 0 0 1px #150F09,0 0 0 2px #6B5028,0 8px 20px rgba(0,0,0,.7);font-family:var(--display);font-size:18px;font-weight:700}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
@@ -254,9 +334,9 @@ body.hand-left .shhead{flex-direction:row-reverse}
     <div class="bar"><i id="bFill"></i></div>
     <div class="bmeta" id="bMeta"></div>
     <div class="tiles">
-      <button class="tile" type="button" data-tile="income"><span>Доход</span><strong id="tIncome">—</strong></button>
-      <button class="tile" type="button" data-tile="plan"><span>До плана</span><strong id="tBalance">—</strong></button>
-      <button class="tile" type="button" data-tile="kop"><span>Копилка</span><strong id="tKop">—</strong></button>
+      <button class="tile" type="button" data-tile="income"><span id="tlIncome">Доход</span><strong id="tIncome">—</strong></button>
+      <button class="tile" type="button" data-tile="plan"><span id="tlPlan">До плана</span><strong id="tBalance">—</strong></button>
+      <button class="tile" type="button" data-tile="kop"><span id="tlKop">Копилка</span><strong id="tKop">—</strong></button>
     </div>
   </header>
   <div class="seg" role="tablist">
@@ -341,7 +421,24 @@ function saveQueue(){ store.set('fam_queue', JSON.stringify(queue)); }
 
 var nf = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 var n0 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 });
-function money(n, cur){ return nf.format(r2(n)) + ' ' + (cur || (state.data ? state.data.config.currency : 'р.')); }
+function isFantasy(){ return document.documentElement.getAttribute('data-theme') === 'fantasy'; }
+var HAS_COIN = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent); // значок 🪙 есть на устройствах Apple
+function mainCur(){ return isFantasy() ? (HAS_COIN ? '🪙' : 'з.') : (state.data ? state.data.config.currency : 'р.'); }
+function money(n, cur){ return nf.format(r2(n)) + ' ' + (cur || mainCur()); }
+// подписи: [обычная, в теме «Фэнтези»]
+var LBL = {
+  left:['Осталось','Казна'], short:['Не хватает','Казна пуста, долг'], spent:['Потрачено','Растрачено'],
+  income:['Доход','Добыча'], toPlan:['До плана','До цели'], kop:['Копилка','Сундук'],
+  tabCats:['Статьи','Статьи'], tabList:['Траты','Журнал'], tabInc:['Доходы','Добыча'],
+  add:['+ Добавить','+ Записать'], tExp:['Расход','Трата'], tInc:['Доход','Добыча'], tKop:['Копилка','Сундук'],
+  kopIn:['+ Пополнить','+ Положить'], kopOut:['− Взять','− Достать']
+};
+function L(k){ return LBL[k][isFantasy() ? 1 : 0]; }
+function applyLabels(){
+  $('#tlIncome').textContent = L('income'); $('#tlPlan').textContent = L('toPlan'); $('#tlKop').textContent = L('kop');
+  $('[data-view="cats"]').textContent = L('tabCats'); $('[data-view="list"]').textContent = L('tabList'); $('[data-view="income"]').textContent = L('tabInc');
+  $('#addBtn').textContent = L('add');
+}
 function signed(n, cur){ return (n > 0 ? '+' : n < 0 ? '−' : '') + money(Math.abs(n), cur); }
 
 /* ======================= DEMO ======================= */
@@ -539,6 +636,7 @@ function catOrder(){
 function render(){
   if (!D()) return;
   $('#demoBar').hidden = !state.demo;
+  applyLabels();
   renderHeader();
   updateNote();
   Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function(b){ b.setAttribute('aria-selected', b.dataset.view === state.view); });
@@ -552,17 +650,17 @@ function renderHeader(){
   $('#nextM').disabled = idx < 0 || idx >= d.sheets.length - 1;
   // Крупно — «Осталось» = доход на данный момент − расходы на данный момент (как красная ячейка в таблице)
   var bal = t.income - t.fact, base = t.income > 0 ? t.income : t.plan;
-  $('#lbl').textContent = bal >= 0 ? 'Осталось' : 'Не хватает';
+  $('#lbl').textContent = bal >= 0 ? L('left') : L('short');
   var tot = $('#total');
   tot.textContent = money(Math.abs(bal));
   tot.className = 'total' + (bal < 0 ? ' neg' : '');
   var fill = $('#bFill'), pct = base ? t.fact / base * 100 : 0;
   fill.style.width = Math.min(100, pct) + '%';
   fill.className = pct > 100 ? 'over' : pct > 90 ? 'warn' : '';
-  $('#bMeta').innerHTML = 'Потрачено <strong>' + money(t.fact) + '</strong> · доход ' + money(t.income);
-  $('#tIncome').textContent = n0.format(t.income) + ' ' + d.config.currency;
+  $('#bMeta').innerHTML = L('spent') + ' <strong>' + money(t.fact) + '</strong> · ' + L('income').toLowerCase() + ' ' + money(t.income);
+  $('#tIncome').textContent = n0.format(t.income) + ' ' + mainCur();
   var toPlan = t.plan - t.fact, tb = $('#tBalance');
-  tb.textContent = !t.plan ? '—' : (toPlan < 0 ? '−' : '') + n0.format(Math.abs(toPlan)) + ' ' + d.config.currency;
+  tb.textContent = !t.plan ? '—' : (toPlan < 0 ? '−' : '') + n0.format(Math.abs(toPlan)) + ' ' + mainCur();
   tb.className = toPlan < 0 ? 'neg' : '';
   $('#tKop').textContent = n0.format(d.kopilka.total) + ' ' + d.config.kopilkaCurrency;
 }
@@ -608,7 +706,7 @@ function listHtml(){
 function incomeHtml(){
   var d = D(), t = totals(), kc = d.config.kopilkaCurrency, html = '';
   var pct = t.incomePlan ? Math.min(100, t.income / t.incomePlan * 100) : 0;
-  html += '<div class="stat" id="incCard"><h3>Доходы</h3><div class="big">' + money(t.income) + (t.incomePlan ? ' <small>из ожидаемых ' + money(t.incomePlan) + '</small>' : '') + '</div>' +
+  html += '<div class="stat" id="incCard"><h3>' + L('tabInc') + '</h3><div class="big">' + money(t.income) + (t.incomePlan ? ' <small>из ожидаемых ' + money(t.incomePlan) + '</small>' : '') + '</div>' +
     (t.incomePlan ? '<div class="bar"><i style="width:' + pct + '%"></i></div>' : '') + '</div>';
   function dr(label, v){ return '<span>' + label + '</span><b class="' + (v < 0 ? 'neg' : 'pos') + '">' + signed(v) + '</b>'; }
   html += '<div class="stat"><h3>Разница</h3><div class="diff">' +
@@ -622,8 +720,8 @@ function incomeHtml(){
       '<span class="rmain"><span class="rcat">' + (esc(i.source) || 'Без источника') + '</span><span class="rsub">' + sub + '</span></span>' +
       '<span class="ramt ' + (i.amount < 0 ? 'neg' : '') + '">' + money(i.amount) + '</span></button>';
   }).join('') : '<div class="empty">Доходов на этом листе пока нет</div>') + '</div></div>';
-  html += '<div class="stat" id="kopCard"><h3>Копилка</h3><div class="big">' + money(d.kopilka.total, kc) + '</div>' +
-    '<div class="btns"><button type="button" class="soft" data-kop="1">+ Пополнить</button><button type="button" class="soft" data-kop="-1">− Взять</button></div>' +
+  html += '<div class="stat" id="kopCard"><h3>' + L('kop') + '</h3><div class="big">' + money(d.kopilka.total, kc) + '</div>' +
+    '<div class="btns"><button type="button" class="soft" data-kop="1">' + L('kopIn') + '</button><button type="button" class="soft" data-kop="-1">' + L('kopOut') + '</button></div>' +
     '<div class="card">' + (d.kopilka.items.length ? d.kopilka.items.map(function(k){
       var sub = [k.pending ? 'ждёт отправки' : k.date ? dayLabel(k.date) : '', k.who].filter(Boolean).map(esc).join(' · ');
       return '<button type="button" class="row' + (k.pending ? ' pending' : '') + '" data-kp="' + esc(k.id) + '">' +
@@ -660,13 +758,13 @@ function openAdd(type, preset){
   if (f.type === 'kopilka' && preset) f.dir = preset; else if (preset) f.category = preset;
   openSheet(
     '<div class="shhead"><h2>Добавить на лист «' + esc(d.sheet) + '»</h2><button type="button" class="icon" data-close aria-label="Закрыть">✕</button></div>' +
-    '<div class="seg" id="fType"><button type="button" data-t="expense">Расход</button><button type="button" data-t="income">Доход</button><button type="button" data-t="kopilka">Копилка</button></div>' +
+    '<div class="seg" id="fType"><button type="button" data-t="expense">' + L('tExp') + '</button><button type="button" data-t="income">' + L('tInc') + '</button><button type="button" data-t="kopilka">' + L('tKop') + '</button></div>' +
     '<label class="amt"><input id="fAmount" inputmode="decimal" placeholder="0" autocomplete="off" aria-label="Сумма"><span id="fCur"></span></label>' +
     '<div id="fBody"></div><p class="err" id="fErr" hidden></p>' +
     '<button type="button" class="primary" id="fSave">Сохранить</button>'
   );
   function body(){
-    $('#fCur').textContent = f.type === 'kopilka' ? cfgD.kopilkaCurrency : cfgD.currency;
+    $('#fCur').textContent = f.type === 'kopilka' ? cfgD.kopilkaCurrency : mainCur();
     Array.prototype.forEach.call($('#fType').children, function(b){ b.setAttribute('aria-selected', b.dataset.t === f.type); });
     var h = '';
     if (f.type === 'expense'){
@@ -889,7 +987,7 @@ function openSettings(){
   );
   $('#sTheme').addEventListener('click', function(ev){
     var b = ev.target.closest('.chip'); if (!b) return;
-    store.set('fam_theme', b.dataset.v); applyTheme();
+    store.set('fam_theme', b.dataset.v); applyTheme(); render();
     Array.prototype.forEach.call(this.children, function(x){ x.setAttribute('aria-pressed', x === b); });
     $('#sAccent').classList.toggle('off', b.dataset.v === 'fantasy');
     $('#sAccentNote').hidden = b.dataset.v !== 'fantasy';
