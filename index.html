@@ -182,7 +182,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <button class="icon gear" id="gear" type="button" aria-label="Настройки">⚙</button>
     </div>
     <div class="syncnote" id="syncNote"></div>
-    <div class="lbl">Потрачено</div>
+    <div class="lbl" id="lbl">Осталось</div>
     <div class="total" id="total">…</div>
     <div class="bar"><i id="bFill"></i></div>
     <div class="bmeta" id="bMeta"></div>
@@ -482,15 +482,16 @@ function renderHeader(){
   $('#mName').textContent = d.sheet;
   $('#prevM').disabled = idx <= 0;
   $('#nextM').disabled = idx < 0 || idx >= d.sheets.length - 1;
-  $('#total').textContent = money(t.fact);
-  // «Осталось» = доход на данный момент − расходы на данный момент (как красная ячейка в таблице)
+  // Крупно — «Осталось» = доход на данный момент − расходы на данный момент (как красная ячейка в таблице)
   var bal = t.income - t.fact, base = t.income > 0 ? t.income : t.plan;
+  $('#lbl').textContent = bal >= 0 ? 'Осталось' : 'Не хватает';
+  var tot = $('#total');
+  tot.textContent = money(Math.abs(bal));
+  tot.className = 'total' + (bal < 0 ? ' neg' : '');
   var fill = $('#bFill'), pct = base ? t.fact / base * 100 : 0;
   fill.style.width = Math.min(100, pct) + '%';
   fill.className = pct > 100 ? 'over' : pct > 90 ? 'warn' : '';
-  $('#bMeta').innerHTML = bal >= 0
-    ? 'Осталось <strong>' + money(bal) + '</strong> · доход ' + money(t.income)
-    : 'Не хватает <strong class="neg">' + money(-bal) + '</strong> · доход ' + money(t.income);
+  $('#bMeta').innerHTML = 'Потрачено <strong>' + money(t.fact) + '</strong> · доход ' + money(t.income);
   $('#tIncome').textContent = n0.format(t.income) + ' ' + d.config.currency;
   var toPlan = t.plan - t.fact, tb = $('#tBalance');
   tb.textContent = !t.plan ? '—' : (toPlan < 0 ? '−' : '') + n0.format(Math.abs(toPlan)) + ' ' + d.config.currency;
