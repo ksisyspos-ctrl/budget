@@ -117,6 +117,12 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
 .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:16px;padding:15px 26px;border-radius:99px;box-shadow:var(--shadow);white-space:nowrap;z-index:5}
 .fab:active{transform:translateX(-50%) scale(.97)}
+/* под левую / правую руку */
+body.hand-left .fab{left:max(16px,env(safe-area-inset-left,0px));right:auto;transform:none}
+body.hand-right .fab{left:auto;right:max(16px,env(safe-area-inset-right,0px));transform:none}
+body.hand-left .fab:active,body.hand-right .fab:active{transform:scale(.97)}
+body.hand-left #sync,body.hand-left #gear{order:-1}
+body.hand-left .shhead{flex-direction:row-reverse}
 
 .scrim{position:fixed;inset:0;background:var(--scrim);opacity:0;transition:opacity .2s;z-index:20}
 .scrim.open{opacity:1}
@@ -791,10 +797,22 @@ $('#demoExit').addEventListener('click', function(){ showSetup(''); });
 $('#gateBtn').addEventListener('click', function(){ cfg.code = $('#gateCode').value.trim(); saveCfg(); load(state.sheet); flush(); });
 $('#gateCode').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') $('#gateBtn').click(); });
 
+var HANDS = [['left','Слева (левша)'],['center','По центру'],['right','Справа']];
+function hand(){ var h = store.get('fam_hand'); return h === 'left' || h === 'right' ? h : 'center'; }
+function applyHand(){
+  document.body.classList.remove('hand-left','hand-right');
+  if (hand() !== 'center') document.body.classList.add('hand-' + hand());
+}
+applyHand();
+
 function openSettings(){
   var id = apiId(), link = id ? location.origin + location.pathname + '#s=' + id : '';
   openSheet(
     '<div class="shhead"><h2>Настройки</h2><button type="button" class="icon" data-close aria-label="Закрыть">✕</button></div>' +
+    '<div class="flabel">Кнопка «Добавить»</div><div class="chips" id="sHand">' + HANDS.map(function(h){
+      return '<button type="button" class="chip" data-v="' + h[0] + '" aria-pressed="' + (hand() === h[0]) + '"><span>' + h[1] + '</span></button>';
+    }).join('') + '</div>' +
+    '<p class="note" style="margin-top:8px">«Слева» — ещё и кнопки ↻ ⚙ и крестик в окнах переедут на левую сторону.</p>' +
     (state.demo ? '<p class="note">Сейчас открыто демо.</p><button type="button" class="primary" id="sConnect">Подключить свою таблицу</button>' :
       '<div class="flabel">Ссылка для семьи</div>' +
       '<p class="note" style="margin-top:0">Отправьте её родным: по ней приложение само подключится к вашей таблице, останется ввести код.</p>' +
@@ -803,6 +821,11 @@ function openSettings(){
       '<button type="button" class="danger" id="sOut">Отключить таблицу на этом телефоне</button>' +
       (queue.length ? '<p class="note">Ждут отправки: ' + queue.length + '. При отключении они пропадут.</p>' : ''))
   );
+  $('#sHand').addEventListener('click', function(ev){
+    var b = ev.target.closest('.chip'); if (!b) return;
+    store.set('fam_hand', b.dataset.v); applyHand();
+    Array.prototype.forEach.call(this.children, function(x){ x.setAttribute('aria-pressed', x === b); });
+  });
   var c = $('#sConnect'); if (c) c.addEventListener('click', function(){ closeSheet(); showSetup(''); });
   var cp = $('#sCopy');
   if (cp) cp.addEventListener('click', function(){
